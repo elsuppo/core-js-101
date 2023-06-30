@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
@@ -20,10 +19,15 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() {
+      return width * height;
+    },
+  };
 }
-
 
 /**
  * Returns the JSON representation of specified object
@@ -35,10 +39,7 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
-}
-
+const getJSON = (obj) => JSON.stringify(obj);
 
 /**
  * Returns the object of specified type from JSON representation
@@ -51,10 +52,16 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
-}
+function fromJSON(proto, json) {
+  const data = JSON.parse(json);
+  const obj = Object.create(proto);
 
+  Object.keys(data).forEach((prop) => {
+    obj[prop] = data[prop];
+  });
+
+  return obj;
+}
 
 /**
  * Css selectors builder
@@ -111,35 +118,61 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selectors: [],
+  elementCount: 0,
+  idCount: 0,
+  pseudoElementCount: 0,
+
+  element(value) {
+    if (this.elementCount > 0) {
+      throw new Error('');
+    }
+    this.elementCount = 1;
+    return { ...this, selectors: [...this.selectors, value] };
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.idCount > 0) {
+      throw new Error('');
+    }
+    this.idCount = 1;
+    return { ...this, selectors: [...this.selectors, `#${value}`] };
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    return { ...this, selectors: [...this.selectors, `.${value}`] };
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    return { ...this, selectors: [...this.selectors, `[${value}]`] };
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    return { ...this, selectors: [...this.selectors, `:${value}`] };
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.pseudoElementCount > 0) {
+      throw new Error('');
+    }
+    this.pseudoElementCount = 1;
+    return { ...this, selectors: [...this.selectors, `::${value}`] };
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return {
+      ...this,
+      selectors: [
+        ...this.selectors,
+        `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
+      ],
+    };
+  },
+
+  stringify() {
+    return this.selectors.join('');
   },
 };
-
 
 module.exports = {
   Rectangle,
